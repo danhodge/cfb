@@ -5,10 +5,6 @@ require 'mechanize'
 
 module CFB
   class ScrapePicks
-    YEARS = {
-      2015 => '1447210129'
-    }
-
     Result = Struct.new(:games, :participants) do
       def add_participant(participant)
         self.participants << participant
@@ -17,14 +13,17 @@ module CFB
 
     def self.run(*args)
       raise "Must specify a URL" if args.empty?
-      year = args[1].to_i || Date.today.year
+      year_indicator = (args[1] || 'current').to_sym
 
-      result = new(args[0]).scrape(year)
-      File.open("results_#{year}.json", 'w') do |file|
+      scraper = new(args[0], year_indicator)
+      result = scraper.scrape
+
+      File.open("results_#{scraper.year}.json", 'w') do |file|
         file << result.games.sort_by { |game| game.time }.each_with_index.map do |game, i|
           {
             game_id: i,
             game_name: game.name,
+            game_time: game.time,
             visitor: {
               name: game.visitor.name, final_score: nil
             },
@@ -34,13 +33,14 @@ module CFB
           }
         end.to_json
       end
-      File.open("participants_#{year}.json", 'w') do |file|
+      File.open("participants_#{scraper.year}.json", 'w') do |file|
         file << result.participants.map { |p| p.as_json }.to_json
       end
     end
 
-    def initialize(url)
+    def initialize(url, year_indicator)
       @base_url = url
+      @year_indicator = year_indicator
       @logger = Logger.new(STDOUT)
       @agent = Mechanize.new do |mechanize|
         mechanize.user_agent = 'Mac Safari'
@@ -48,8 +48,27 @@ module CFB
       end
     end
 
-    def scrape(year)
-      page = agent.get("#{base_url}?year=#{YEARS[year]}")
+    def year
+      @year ||= begin
+                  today = Date.today
+                  if year_indicator == :current
+                    if today.month < 8
+                      today.year - 1
+                    else
+                      today.year
+                    end
+                  elsif year_indicator == :previous
+                    if today.month < 8
+                      today.year - 2
+                    else
+                      today.year - 1
+                    end
+                  end
+                end
+    end
+
+    def scrape
+      page = load_page_for_year_indicator
       table = page.search('//table').first
 
       result = Result.new([], [])
@@ -95,7 +114,21 @@ module CFB
 
     private
 
-    attr_reader :base_url, :logger, :agent
+    attr_reader :base_url, :year_indicator, :logger, :agent
+
+    def load_page_for_year_indicator
+      page = agent.get("#{base_url}")
+
+      if year_indicator == :current && page.search('//h3').map(&:text).include?("No results for this Year")
+        raise 'No results are available for the current year'
+      elsif year_indicator == :previous
+        if link = page.link_with(text: "View Previous Year's Results.")
+          link.click
+        else
+          raise 'No results available for the previous year'
+        end
+      end
+    end
 
     def handle_participant(result, cells)
       picks = cells.drop(1).take(result.games.count * 2).each_slice(2).each_with_index.map do |(visitor, home), i|
