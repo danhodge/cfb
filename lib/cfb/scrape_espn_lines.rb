@@ -5,7 +5,11 @@ require 'mechanize'
 module CFB
   class ScrapeEspnLines
     def self.run(**kwargs)
-      new(**kwargs).scrape.tap { |x| require 'pry'; binding.pry }
+      point_spreads = new(**kwargs).scrape
+
+      File.open("point_spreads_#{CFB.year}.json", 'w') do |file|
+        file << point_spreads.sort_by(&:time).map(&:to_h).to_json
+      end
     end
 
     def initialize(url: 'http://espn.go.com/college-football/lines')
