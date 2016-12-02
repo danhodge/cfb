@@ -12,10 +12,9 @@ module CFB
     end
 
     def self.run(*args)
-      raise "Must specify a URL" if args.empty?
-      year_indicator = (args[1] || 'current').to_sym
+      year_indicator = (args[0] || 'current').to_sym
 
-      scraper = new(args[0], year_indicator)
+      scraper = new(year_indicator: year_indicator)
       result = scraper.scrape
 
       File.open("results_#{scraper.year}.json", 'w') do |file|
@@ -38,7 +37,7 @@ module CFB
       end
     end
 
-    def initialize(url, year_indicator)
+    def initialize(url: 'http://broadjumper.com/family_fun.html', year_indicator:)
       @base_url = url
       @year_indicator = year_indicator
       @logger = Logger.new(STDOUT)
@@ -50,19 +49,10 @@ module CFB
 
     def year
       @year ||= begin
-                  today = Date.today
                   if year_indicator == :current
-                    if today.month < 8
-                      today.year - 1
-                    else
-                      today.year
-                    end
+                    CFB.year
                   elsif year_indicator == :previous
-                    if today.month < 8
-                      today.year - 2
-                    else
-                      today.year - 1
-                    end
+                    CFB.year - 1
                   end
                 end
     end
