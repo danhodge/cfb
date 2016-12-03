@@ -1,5 +1,15 @@
 module CFB
   Game = Struct.new(:name, :location, :time, :visitor, :home) do
+    def self.from_json(json)
+      new(
+        json["name"],
+        json["location"],
+        json["time"],
+        Team.from_json(json["visitor"]),
+        Team.from_json(json["home"])
+      )
+    end
+
     def merge(game)
       merged = attributes.merge(game.attributes) do |key, old_val, new_val|
         if [:visitor, :home].include?(key)

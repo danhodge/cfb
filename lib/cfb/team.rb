@@ -1,5 +1,15 @@
 module CFB
   Team = Struct.new(:name, :wins, :losses, :ranking, :point_spreads) do
+    def self.from_json(json)
+      new(
+        json["name"],
+        json["wins"],
+        json["losses"],
+        json["ranking"],
+        json["point_spreads"]
+      )
+    end
+
     def attributes
       to_h
     end
