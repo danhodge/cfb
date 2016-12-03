@@ -20,9 +20,9 @@ module CFB
       File.open("results_#{scraper.year}.json", 'w') do |file|
         file << result.games.sort_by { |game| game.time }.each_with_index.map do |game, i|
           {
-            game_id: i,
-            game_name: game.name,
-            game_time: game.time,
+            id: i,
+            name: game.name,
+            time: game.time,
             visitor: {
               name: game.visitor.name, final_score: nil
             },
