@@ -22,8 +22,10 @@ module CFB
     end
 
     def scrape
-      page = agent.get(url)
+      extract_games(agent.get(url))
+    end
 
+    def extract_games(page)
       container = page.search("//div[@class='mod-container mod-table mod-no-header']").first
       table = container.search('div/table').first
 
