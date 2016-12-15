@@ -58,7 +58,10 @@ module CFB
     end
 
     def scrape
-      page = load_page_for_year_indicator
+      extract_picks(load_page_for_year_indicator)
+    end
+
+    def extract_picks(page)
       table = page.search('//table').first
 
       result = Result.new([], [])
@@ -118,6 +121,8 @@ module CFB
           raise 'No results available for the previous year'
         end
       end
+
+      page
     end
 
     def handle_participant(result, cells)
