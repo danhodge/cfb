@@ -40,6 +40,16 @@ module CFB
           ]
         else
           puts "Unable to find a line for game: #{game.name}"
+          yield [
+            Time.parse(game.time).to_date,
+            game.name,
+            game.visitor.name,
+            game.home.name,
+            'UNKNOWN',
+            'UNKNOWN',
+            '',
+            ''
+          ]
         end
       end
     end
