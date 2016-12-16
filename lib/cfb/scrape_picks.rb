@@ -32,8 +32,11 @@ module CFB
           }
         end.to_json
       end
-      File.open("participants_#{scraper.year}.json", 'w') do |file|
-        file << result.participants.map { |p| p.as_json }.to_json
+
+      unless result.participants.empty?
+        File.open("participants_#{scraper.year}.json", 'w') do |file|
+          file << result.participants.map { |p| p.as_json }.to_json
+        end
       end
     end
 
