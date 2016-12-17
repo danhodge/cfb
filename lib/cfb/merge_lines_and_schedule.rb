@@ -9,7 +9,7 @@ module CFB
       File.open(kwargs[:lines], 'r') do |lines|
         File.open(kwargs[:schedule], 'r') do |schedule|
           CSV.open('picks.csv', 'w') do |csv|
-            csv << ["Date", "Bowl", "Visitor", "Home", "Favorite", "Spread", "Choice", "Adjustment"]
+            csv << ["ID", "Date", "Bowl", "Visitor", "Home", "Favorite", "Spread", "Choice", "Adjustment"]
 
             new(lines, schedule).each do |row|
               csv << row
@@ -25,10 +25,11 @@ module CFB
     end
 
     def each
-      schedule.each do |game|
+      schedule.each_with_index do |game, i|
         if line = line_for(game)
           merged = game.merge(line)
           yield [
+            i + 1,
             Time.parse(merged.time).to_date,
             merged.name,
             merged.visitor.name,
@@ -41,6 +42,7 @@ module CFB
         else
           puts "Unable to find a line for game: #{game.name}"
           yield [
+            i + 1,
             Time.parse(game.time).to_date,
             game.name,
             game.visitor.name,
