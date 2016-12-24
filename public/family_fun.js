@@ -64,6 +64,12 @@ Participant.prototype.pointsRemaining = function() {
     return (820 - (this.pointsFor + this.pointsLost));
 };
 
+Participant.prototype.scoringAverage = function() {
+    var pointsWagered = (this.pointsFor + this.pointsLost);
+
+    return Math.round(this.pointsFor * 1000 / pointsWagered) / 10;
+};
+
 Participant.prototype.isFamilyOrFriend = function() {
     var people = ["Ribwich", "0 Illini GW", "0 Illini Mike", "Red Rhody", "Chuck", "Miss Scarlet", "teamocil"];
     return (people.indexOf(this.name) != -1);
@@ -163,6 +169,7 @@ function handleParticipants(results, participants) {
         html.push("<td>" + value.pointsFor + "</td>");
         html.push("<td>" + value.pointsLost + "</td>");
         html.push("<td>" + value.pointsRemaining() + "</td>");
+        html.push("<td>" + value.scoringAverage() + "</td>");
         html.push("</tr>");
     });
     $('#standings tbody').html(html.join(''));
