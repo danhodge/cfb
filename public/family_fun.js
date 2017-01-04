@@ -10,10 +10,18 @@ Game.prototype.isDone = function() {
     return (this.visitorScore.length > 0 && this.homeScore.length > 0);
 }
 
+Game.prototype.visitorScoreNum = function() {
+    return parseInt(this.visitorScore, 10);
+}
+
+Game.prototype.homeScoreNum = function() {
+    return parseInt(this.homeScore, 10);
+}
+
 Game.prototype.winner = function() {
-    if (this.isDone() && (this.visitorScore > this.homeScore)) {
+    if (this.isDone() && (this.visitorScoreNum() > this.homeScoreNum())) {
         return this.visitor;
-    } else if (this.isDone() && (this.homeScore > this.visitorScore)) {
+    } else if (this.isDone() && (this.homeScoreNum() > this.visitorScoreNum())) {
         return this.home;
     }
 }
