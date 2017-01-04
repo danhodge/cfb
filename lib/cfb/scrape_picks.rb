@@ -1,4 +1,5 @@
 require 'cfb'
+require 'csv'
 require 'date'
 require 'logger'
 require 'mechanize'
@@ -17,20 +18,11 @@ module CFB
       scraper = new(year_indicator: year_indicator)
       result = scraper.scrape
 
-      File.open("results_#{scraper.year}.json", 'w') do |file|
-        file << result.games.sort_by { |game| game.time }.each_with_index.map do |game, i|
-          {
-            id: i,
-            name: game.name,
-            time: game.time,
-            visitor: {
-              name: game.visitor.name, final_score: nil
-            },
-            home: {
-              name: game.home.name, final_score: nil
-            }
-          }
-        end.to_json
+      CSV.open("results_#{scraper.year}.csv", 'w') do |csv|
+        csv << ['ID', 'Name', 'Time', 'Visitor', 'Final Score', 'Home', 'Final Score']
+        result.games.sort_by { |game| game.time }.each_with_index.map do |game, i|
+          csv << [i, game.name, game.time, game.visitor.name, nil, game.home.name, nil]
+        end
       end
 
       unless result.participants.empty?

@@ -21,7 +21,7 @@ module CFB
 
     def initialize(lines, schedule)
       @lines = JSON.load(lines).map { |data| Game.from_json(data) }
-      @schedule = JSON.load(schedule).map { |data| Game.from_json(data) }
+      @schedule = CSV.new(schedule, headers: true).map { |row| Game.from_csv(row) }
     end
 
     def each

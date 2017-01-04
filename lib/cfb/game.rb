@@ -10,6 +10,16 @@ module CFB
       )
     end
 
+    def self.from_csv(row)
+      new(
+        row["Name"],
+        nil,
+        row["Time"],
+        Team.new(row["Visitor"]),
+        Team.new(row["Home"])
+      )
+    end
+
     def merge(game)
       merged = attributes.merge(game.attributes) do |key, old_val, new_val|
         if [:visitor, :home].include?(key)
