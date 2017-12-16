@@ -27,7 +27,17 @@ module CFB
 
       games.each_with_index do |game, i|
         choice = choices_by_game.fetch(game.name.downcase)
-        form["win[#{i}]"] = (choice.team == game.visitor.name) ? 1 : 2
+        buttons = form.radiobuttons.select { |btn| btn.name == "win[#{i}]" }
+        visitor_button = buttons.find { |btn| btn.value == "1" }
+        home_button = buttons.find { |btn| btn.value == "2" }
+
+        if choice.team == game.visitor.name
+          visitor_button.check
+          home_button.uncheck
+        else
+          visitor_button.uncheck
+          home_button.check
+        end
         form["conf[#{i}]"] = choice.confidence
       end
       form.tie = tie_breaker
