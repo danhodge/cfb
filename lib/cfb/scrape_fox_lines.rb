@@ -8,7 +8,7 @@ module CFB
       point_spreads = new(**kwargs).scrape
 
       File.open("point_spreads_#{CFB.year}.json", 'w') do |file|
-        file << point_spreads.sort_by(&:time).map(&:to_h).to_json
+        file << JSON.pretty_generate(point_spreads.sort_by(&:time).map(&:to_h))
       end
     end
 
