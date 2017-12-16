@@ -22,8 +22,12 @@ module CFB
       form.uname = name
       form.email = email
       form.phone = phone
+      # add silently fails if this is not specified
+      form.submit = "Submit"
 
       result = form.submit
+      # TODO: make sure nickname shows up at the top of the result page (SELECT nick from participant...)
+      result
     end
 
     private
