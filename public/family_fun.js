@@ -26,22 +26,10 @@ Game.prototype.winner = function() {
     }
 }
 
-function parseCSV(text) {
-    var allLines = text.split(/\r\n|\n/);
-    var headers = allLines[0].split(',');
-    var lines = [];
-
-    for (var i = 1; i < allLines.length; i++) {
-        if ($.trim(allLines[i]).length == 0) {
-            continue;
-        } else {
-            var data = allLines[i].split(',');
-            lines.push(new Game(data[1], data[3], data[4], data[5], data[6]));
-        }
-    }
-
-    console.log("Found: " + lines.length + " games");
-    return lines;
+function parseResults(data) {
+    return $.map(data, function(result) {
+        return new Game(result.game, result.visitor.name, result.visitor.score, result.home.name, result.home.score);
+    });
 }
 
 function Participant(name) {
@@ -84,14 +72,15 @@ Participant.prototype.isFamilyOrFriend = function() {
 }
 
 function loadResults(handlerFunc) {
-    var threshold = 15 * 60 * 1000; // 15 minutes in milliseconds
+    var threshold = 1 * 60 * 1000; // 1 minute in milliseconds
     var lastUpdated = JSON.parse(localStorage.getItem("gameResultsUpdatedAt"));
     var age = (lastUpdated != null) ? new Date() - new Date(lastUpdated) : threshold;
 
     if (age >= threshold) {
         console.log("Fetching game results, lastUpdated = " + lastUpdated);
 
-        $.getJSON('https://s3.amazonaws.com/danhodge-cfb/2017/results_2017.json', function(results) {
+        $.getJSON('https://s3.amazonaws.com/danhodge-cfb/2017/results_2017.json', function(rawResults) {
+            results = parseResults(rawResults);
             localStorage.setItem("gameResults", JSON.stringify(results));
             localStorage.setItem("gameResultsUpdatedAt", JSON.stringify(new Date()));
             handleResults(results, handlerFunc);
@@ -99,7 +88,7 @@ function loadResults(handlerFunc) {
     } else {
         console.log("Using stored game results, lastUpdated = " + lastUpdated);
         var results = $.map(JSON.parse(localStorage.getItem("gameResults")), function(data) {
-            return new Game(data.game, data.visitor.name, data.visitor.score, data.home.name, data.home.score);
+            return new Game(data.name, data.visitor, data.visitorScore, data.home, data.homeScore);
         });
         handleResults(results, handlerFunc);
     }
