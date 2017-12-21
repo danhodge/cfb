@@ -19,13 +19,15 @@ module CFB
       result = scraper.scrape
 
       results = result.games.sort_by { |game| game.time }.each_with_index.map do |game, i|
-        {
-          id: i,
-          game: game.name,
-          visitor: { name: game.visitor.name, score: nil },
-          home: { name: game.home.name, score: nil }
-        }
-      end
+        [
+          i,
+          {
+            game: game.name,
+            visitor: { name: game.visitor.name, score: nil },
+            home: { name: game.home.name, score: nil }
+          }
+        ]
+      end.to_h
 
       File.open("results_#{scraper.year}.json", "w") { |file| file << JSON.pretty_generate(results) }
 

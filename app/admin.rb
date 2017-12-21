@@ -11,8 +11,13 @@ S3 = Aws::S3::Client.new(
 get '/scores' do
   data = S3.get_object(bucket: "danhodge-cfb", key: "2017/results_2017.json").body.read
   results = JSON.parse(data, symbolize_names: true)
+  display_results = if request.params["all"] == "1"
+                      results
+                    else
+                      results.reject { |_k, v| v[:visitor][:score] && v[:home][:score] }
+                    end
 
-  erb :scores, locals: { results: results }
+  erb :scores, locals: { results: display_results }
 end
 
 post '/scores' do
@@ -20,13 +25,13 @@ post '/scores' do
   results = JSON.parse(data, symbolize_names: true)
 
   request[:visitor].each do |index, value|
-    res = results.find { |result| result[:id] == index.to_i }
-    res[:visitor][:score] = value unless value.length == 0
+    res = results.fetch(index.to_sym)
+    res[:visitor][:score] = value unless value.length.zero?
   end
 
   request[:home].each do |index, value|
-    res = results.find { |result| result[:id] == index.to_i }
-    res[:home][:score] = value unless value.length == 0
+    res = results.fetch(index.to_sym)
+    res[:home][:score] = value unless value.length.zero?
   end
 
   S3.put_object(

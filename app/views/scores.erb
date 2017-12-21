@@ -1,21 +1,28 @@
 <form id="scores" method="POST" action="/scores">
+<a href="/scores?all=1">All</a>
+<a href="/scores?all=0">Incomplete</a>
+<input type="submit" value="Submit"/>
 <table>
+<thead>
 <tr>
-  <td>Game</td>
-  <td>Visitor</td>
-  <td>Score</td>
-  <td>Home</td>
-  <td>Score</td>
+  <th>Game</th>
+  <th>Visitor</th>
+  <th>Score</th>
+  <th>Home</th>
+  <th>Score</th>
 </tr>
-<% results.each do |result| %>
+</thead>
+<tbody>
+<% results.each do |id, result| %>
 <tr>
   <td><%= result[:game] %></td>
   <td><%= result[:visitor][:name] %></td>
-  <td><input type="text" name="visitor[<%= result[:id] %>]" value="<%= result[:visitor][:score] %>"/></td>
+  <td><input type="text" name="visitor[<%= id %>]" value="<%= result[:visitor][:score] %>"/></td>
   <td><%= result[:home][:name] %></td>
-  <td><input type="text" name="home[<%= result[:id] %>]" value="<%= result[:home][:score] %>"/></td>
+  <td><input type="text" name="home[<%= id %>]" value="<%= result[:home][:score] %>"/></td>
 <tr>
 <% end %>
+</tbody>
 </table>
 <input type="submit" value="Submit"/>
 </form>
