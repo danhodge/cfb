@@ -2,6 +2,10 @@ require 'json'
 require 'sinatra'
 require 'aws-sdk'
 
+use Rack::Auth::Basic, "Protected Area" do |username, password|
+  username == ENV['USERNAME'] && password == ENV['PASSWORD']
+end
+
 S3 = Aws::S3::Client.new(
   access_key_id: ENV['AWS_ACCESS_KEY_ID'],
   secret_access_key: ENV['AWS_SECRET_ACCESS_KEY'],
@@ -26,12 +30,20 @@ post '/scores' do
 
   request[:visitor].each do |index, value|
     res = results.fetch(index.to_sym)
-    res[:visitor][:score] = value unless value.length.zero?
+    res[:visitor][:score] = if value.length.zero?
+                              nil
+                            else
+                              value
+                            end
   end
 
   request[:home].each do |index, value|
     res = results.fetch(index.to_sym)
-    res[:home][:score] = value unless value.length.zero?
+    res[:home][:score] = if value.length.zero?
+                           nil
+                         else
+                           value
+                         end
   end
 
   S3.put_object(
@@ -42,4 +54,8 @@ post '/scores' do
   )
 
   redirect "/scores"
+end
+
+get '/*' do
+  ""
 end
