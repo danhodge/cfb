@@ -1,9 +1,9 @@
 function Game(name, visitor, visitorScore, home, homeScore) {
     this.name = name;
     this.visitor = visitor;
-    this.visitorScore = visitorScore;
+    this.visitorScore = (visitorScore) ? visitorScore : "";
     this.home = home;
-    this.homeScore = homeScore;
+    this.homeScore = (homeScore) ? homeScore : "";
 }
 
 Game.prototype.isDone = function() {
@@ -68,8 +68,8 @@ Participant.prototype.setPlace = function(place) {
 };
 
 Participant.prototype.pointsRemaining = function() {
-    // assumes 40 games
-    return (820 - (this.pointsFor + this.pointsLost));
+    // assumes 39 games
+    return (780 - (this.pointsFor + this.pointsLost));
 };
 
 Participant.prototype.scoringAverage = function() {
@@ -79,7 +79,7 @@ Participant.prototype.scoringAverage = function() {
 };
 
 Participant.prototype.isFamilyOrFriend = function() {
-    var people = ["Ribwich", "0 Illini GW", "0 Illini Mike", "Red Rhody", "Chuck", "Miss Scarlet", "teamocil"];
+    var people = ["ribwich", "000GKW", "0000000MDS", "Rhody Mama", "Chuck", "Miss Scarlet", "SteveHolt!"];
     return (people.indexOf(this.name) != -1);
 }
 
@@ -90,28 +90,23 @@ function loadResults(handlerFunc) {
 
     if (age >= threshold) {
         console.log("Fetching game results, lastUpdated = " + lastUpdated);
-        $.ajax({
-            type: "GET",
-            url: "https://dl.dropboxusercontent.com/u/18038003/cfb_results_2016.csv",
-            dataType: "text",
-            success: function(data) {
-                var results = parseCSV(data);
-                localStorage.setItem("gameResults", JSON.stringify(results));
-                localStorage.setItem("gameResultsUpdatedAt", JSON.stringify(new Date()));
-                handleResults(results, handlerFunc);
-            }
+
+        $.getJSON('https://s3.amazonaws.com/danhodge-cfb/2017/results_2017.json', function(results) {
+            localStorage.setItem("gameResults", JSON.stringify(results));
+            localStorage.setItem("gameResultsUpdatedAt", JSON.stringify(new Date()));
+            handleResults(results, handlerFunc);
         });
     } else {
         console.log("Using stored game results, lastUpdated = " + lastUpdated);
         var results = $.map(JSON.parse(localStorage.getItem("gameResults")), function(data) {
-            return new Game(data.name, data.visitor, data.visitorScore, data.home, data.homeScore);
+            return new Game(data.game, data.visitor.name, data.visitor.score, data.home.name, data.home.score);
         });
         handleResults(results, handlerFunc);
     }
 }
 
 function handleResults(results, renderFunc) {
-    $.getJSON('https://s3.amazonaws.com/danhodge-cfb/2016/participants_2016.json', function(participants) {
+    $.getJSON('https://s3.amazonaws.com/danhodge-cfb/2017/participants_2017.json', function(participants) {
         renderFunc(results, participants);
     });
 }
