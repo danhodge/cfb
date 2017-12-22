@@ -29,7 +29,7 @@ module CFB
       scores_log = get_scores_log
       time = Time.now.iso8601
       in_progress.each do |game|
-        scores_log << game.merge(time: time).to_json
+        scores_log << game.merge(time: time)
       end
 
       write_scores_log(scores_log)
@@ -50,7 +50,7 @@ module CFB
       s3.put_object(
         bucket: "danhodge-cfb",
         key: "2017/in_progress_scores.ldjson",
-        body: log.join("\n")
+        body: log.map(&:to_json).join("\n")
       )
     end
   end
