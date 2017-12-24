@@ -23,7 +23,7 @@ module CFB
     def perform
       in_progress, postgame = scraper.scrape
 
-      # handle_in_progress_games(in_progress) unless in_progress.empty?
+      handle_in_progress_games(in_progress) unless in_progress.empty?
       handle_completed_games(postgame) unless postgame.empty?
     end
 
@@ -65,11 +65,26 @@ module CFB
         return false
       end
 
-      value[:visitor][:score] = game[:visitor][:score].to_s
-      value[:home][:score] = game[:home][:score].to_s
+      if match_team_names(value[:visitor][:name], game[:visitor][:name]) || match_team_names(value[:home][:name], game[:home][:name])
+        value[:visitor][:score] = game[:visitor][:score].to_s
+        value[:home][:score] = game[:home][:score].to_s
+        puts "Updated matching final score for game: #{value}"
 
-      puts "Updated final score for game: #{value}"
-      true
+        return true
+      elsif match_team_names(value[:visitor][:name], game[:home][:name]) || match_team_names(value[:home][:name], game[:visitor][:name])
+        value[:visitor][:score] = game[:home][:score].to_s
+        value[:home][:score] = game[:visitor][:score].to_s
+        puts "Updated mismatched final score for game: #{value}"
+
+        return true
+      else
+        puts "Not updating final score because unable to match team names for game: #{value[:game]}"
+        return false
+      end
+    end
+
+    def match_team_names(expected_name, actual_name)
+      expected_name && actual_name && expected_name.downcase == actual_name.downcase
     end
 
     def get_in_progress_scores_log
