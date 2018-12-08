@@ -22,7 +22,9 @@ module CFB
         [
           i,
           {
-            game: game.name,
+            name: game.name,
+            location: game.location,
+            time: game.time,
             visitor: { name: game.visitor.name, score: nil },
             home: { name: game.home.name, score: nil }
           }

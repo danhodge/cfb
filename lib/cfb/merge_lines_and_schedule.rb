@@ -8,7 +8,7 @@ module CFB
     def self.run(**kwargs)
       File.open(kwargs[:lines], 'r') do |lines|
         File.open(kwargs[:schedule], 'r') do |schedule|
-          CSV.open('picks.csv', 'w') do |csv|
+          CSV.open("picks_#{CFB.year}.csv", 'w') do |csv|
             csv << ["ID", "Date", "Bowl", "Visitor", "Home", "Favorite", "Spread", "Choice", "Adjustment"]
 
             new(lines, schedule).each do |row|
@@ -21,7 +21,9 @@ module CFB
 
     def initialize(lines, schedule)
       @lines = JSON.load(lines).map { |data| Game.from_json(data) }
-      @schedule = CSV.new(schedule, headers: true).map { |row| Game.from_csv(row) }
+      @schedule = JSON.load(schedule).values.map do |data|
+        Game.from_json(data)
+      end
     end
 
     def each

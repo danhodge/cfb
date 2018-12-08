@@ -12,7 +12,7 @@ module CFB
       end
     end
 
-    def initialize(url: 'http://www.foxsports.com/college-football/odds')
+    def initialize(url: 'http://www.foxsports.com/college-football/odds?group=0&type=2')
       @url = url
       @logger = Logger.new(STDOUT)
       @agent = Mechanize.new do |mechanize|
