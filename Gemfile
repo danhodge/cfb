@@ -2,6 +2,7 @@ source 'https://rubygems.org'
 
 gem 'aws-sdk', '~> 2.10.106'
 gem 'clockwork', '~> 2.0.2'
+gem 'foreman', '~> 0.85.0'
 gem 'mechanize'
 gem 'pry'
 gem 'sinatra', '~> 2.0.0'

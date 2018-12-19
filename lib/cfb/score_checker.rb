@@ -1,3 +1,4 @@
+require 'cfb'
 require 'cfb/scrape_scores'
 require 'aws-sdk'
 require 'json'
@@ -88,7 +89,7 @@ module CFB
     end
 
     def get_in_progress_scores_log
-      log_data = s3.get_object(bucket: "danhodge-cfb", key: "2017/in_progress_scores.ldjson").body.read
+      log_data = s3.get_object(bucket: "danhodge-cfb", key: "#{CFB.year}/in_progress_scores.ldjson").body.read
       log_data.split("\n").map { |line| JSON.parse(line) }
     rescue => ex
       []
@@ -97,13 +98,13 @@ module CFB
     def write_in_progress_scores_log(log)
       s3.put_object(
         bucket: "danhodge-cfb",
-        key: "2017/in_progress_scores.ldjson",
+        key: "#{CFB.year}/in_progress_scores.ldjson",
         body: log.map(&:to_json).join("\n")
       )
     end
 
     def load_results
-      data = s3.get_object(bucket: "danhodge-cfb", key: "2017/results_2017.json").body.read
+      data = s3.get_object(bucket: "danhodge-cfb", key: "#{CFB.year}/results_#{CFB.year}.json").body.read
       JSON.parse(data, symbolize_names: true)
     end
 
@@ -111,7 +112,7 @@ module CFB
       s3.put_object(
         acl: "public-read",
         bucket: "danhodge-cfb",
-        key: "2017/results_2017.json",
+        key: "#{CFB.year}/results_#{CFB.year}.json",
         body: JSON.pretty_generate(results)
       )
     end
@@ -119,7 +120,7 @@ module CFB
     def write_in_progress_scores_log(log)
       s3.put_object(
         bucket: "danhodge-cfb",
-        key: "2017/in_progress_scores.ldjson",
+        key: "#{CFB.year}/in_progress_scores.ldjson",
         body: log.map(&:to_json).join("\n")
       )
     end

@@ -5,7 +5,9 @@ require 'pry'
 
 module CFB
   class ScrapeScores
-    def initialize(url: "https://www.cbssports.com/college-football/scoreboard/FBS/2017/postseason/16/")
+    # 2017 URL: https://www.cbssports.com/college-football/scoreboard/FBS/2017/postseason/16/
+    # 2018 URL: https://www.cbssports.com/college-football/scoreboard/FBS/2018/postseason/16/
+    def initialize(url: "https://www.cbssports.com/college-football/scoreboard/FBS/2018/postseason/16/")
       @url = url
       @logger = Logger.new(STDOUT)
       @agent = Mechanize.new do |mechanize|
