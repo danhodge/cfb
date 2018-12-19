@@ -31,7 +31,7 @@ get '/scores/in_progress' do
     JSON.parse(line, symbolize_names: true)
   end
 
-  erb :in_progress_scores, { results: results, last_modified: object.last_modified }
+  erb :in_progress_scores, locals: { results: results, as_of_time: object.last_modified }
 end
 
 post '/scores' do
