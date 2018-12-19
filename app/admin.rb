@@ -25,6 +25,15 @@ get '/scores' do
   erb :scores, locals: { results: display_results }
 end
 
+get '/scores/in_progress' do
+  object = S3.get_object(bucket: "danhodge-cfb", key: "#{CFB.year}/in_progress_scores.ldjson")
+  results = object.body.read.each_line.map do |line|
+    JSON.parse(line, symbolize_names: true)
+  end
+
+  erb :in_progress_scores, { results: results, last_modified: object.last_modified }
+end
+
 post '/scores' do
   data = S3.get_object(bucket: "danhodge-cfb", key: "#{CFB.year}/results_#{CFB.year}.json").body.read
   results = JSON.parse(data, symbolize_names: true)

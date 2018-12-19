@@ -1,0 +1,31 @@
+<h2>In Progress Scores</h2>
+As of: <%= last_modified %>
+
+<table>
+  <thead>
+    <tr>
+      <th>Game</th>
+      <th>Visitor</th>
+      <th>Score</th>
+      <th>Home</th>
+      <th>Score</th>
+      <th>Quarter</tr>
+        <th>Remaining</th>
+        <th>Timestamp</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% results.each do |result| %>
+      <tr>
+        <td><%= result[:game] %></td>
+        <td><%= result[:visitor][:name] %></td>
+        <td><%= result[:visitor][:score] %>"/></td>
+        <td><%= result[:home][:name] %></td>
+        <td><%= result[:home][:score] %>></td>
+        <td><%= result[:status][:quarter] %></td>
+        <td><%= result[:status][:remaining] %></td>
+        <td><%= result[:time] %></td>
+        <tr>
+    <% end %>
+  </tbody>
+</table>
