@@ -62,7 +62,7 @@ module CFB
     end
 
     def find_result_for_game(values, game_name)
-      values.find { |game| game[:name] == game_name }
+      values.find { |game| normalized_game_name(game[:name]) == normalized_game_name(game_name) }
     end
 
     def update_result(value, game)
@@ -91,6 +91,10 @@ module CFB
 
     def match_team_names(expected_name, actual_name)
       expected_name && actual_name && expected_name.downcase == actual_name.downcase
+    end
+
+    def normalized_game_name(name)
+      name.downcase.gsub(/bowl/, '').strip
     end
 
     def get_in_progress_scores_log
