@@ -13,6 +13,16 @@ S3 = Aws::S3::Client.new(
   region: 'us-east-1'
 )
 
+get '/health' do
+  heartbeat_file = File.expand_path('../../heartbeat', __FILE__)
+
+  if File.exist?(heartbeat_file)
+    File.mtime(heartbeat_file).getlocal(params[:offset] || "-05:00").to_s
+  else
+    "NA"
+  end
+end
+
 get '/scores' do
   data = S3.get_object(bucket: "danhodge-cfb", key: "#{CFB.year}/results_#{CFB.year}.json").body.read
   results = JSON.parse(data, symbolize_names: true)
