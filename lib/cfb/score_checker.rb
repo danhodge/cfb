@@ -2,6 +2,8 @@ require 'cfb'
 require 'cfb/scrape_scores'
 require 'aws-sdk'
 require 'json'
+require 'fileutils'
+require 'logger'
 
 module CFB
   class ScoreChecker
@@ -19,10 +21,13 @@ module CFB
     def initialize(scraper: CFB::ScrapeScores.new, s3:)
       @scraper = scraper
       @s3 = s3
+      FileUtils.mkdir_p('log/')
+      @logger = Logger.new('log/scrape_scores.log')
     end
 
     def perform
       in_progress, postgame = scraper.scrape
+      logger.debug("in_progress: #{in_progress}, postgame: #{postgame}")
 
       handle_in_progress_games(in_progress) unless in_progress.empty?
       handle_completed_games(postgame) unless postgame.empty?
@@ -30,7 +35,7 @@ module CFB
 
     private
 
-    attr_reader :scraper, :s3
+    attr_reader :scraper, :s3, :logger
 
     def handle_in_progress_games(in_progress)
       in_progress_scores_log = get_in_progress_scores_log
@@ -48,7 +53,7 @@ module CFB
         if value = find_result_for_game(results.values, game[:game])
           count + (update_result(value, game) ? 1 : 0)
         else
-          puts "Could not find a match for completed game: #{game[:game]}"
+          logger.info("Could not find a match for completed game: #{game[:game]}")
           count
         end
       end
@@ -57,29 +62,29 @@ module CFB
     end
 
     def find_result_for_game(values, game_name)
-      values.find { |game| game[:game] == game_name }
+      values.find { |game| game[:name] == game_name }
     end
 
     def update_result(value, game)
       unless value[:visitor][:score].nil? && value[:home][:score].nil?
-        puts "Not updating final score for game #{value[:game]} because it is already set"
+        logger.info("Not updating final score for game #{value[:name]} because it is already set")
         return false
       end
 
       if match_team_names(value[:visitor][:name], game[:visitor][:name]) || match_team_names(value[:home][:name], game[:home][:name])
         value[:visitor][:score] = game[:visitor][:score].to_s
         value[:home][:score] = game[:home][:score].to_s
-        puts "Updated matching final score for game: #{value}"
+        logger.info("Updated matching final score for game: #{value}")
 
         return true
       elsif match_team_names(value[:visitor][:name], game[:home][:name]) || match_team_names(value[:home][:name], game[:visitor][:name])
         value[:visitor][:score] = game[:home][:score].to_s
         value[:home][:score] = game[:visitor][:score].to_s
-        puts "Updated mismatched final score for game: #{value}"
+        logger.info("Updated mismatched final score for game: #{value}")
 
         return true
       else
-        puts "Not updating final score because unable to match team names for game: #{value[:game]}"
+        logger.error("Not updating final score because unable to match team names for game: #{value[:name]}")
         return false
       end
     end
@@ -91,8 +96,6 @@ module CFB
     def get_in_progress_scores_log
       log_data = s3.get_object(bucket: "danhodge-cfb", key: "#{CFB.year}/in_progress_scores.ldjson").body.read
       log_data.split("\n").map { |line| JSON.parse(line) }
-    rescue => ex
-      []
     end
 
     def write_in_progress_scores_log(log)
@@ -114,14 +117,6 @@ module CFB
         bucket: "danhodge-cfb",
         key: "#{CFB.year}/results_#{CFB.year}.json",
         body: JSON.pretty_generate(results)
-      )
-    end
-
-    def write_in_progress_scores_log(log)
-      s3.put_object(
-        bucket: "danhodge-cfb",
-        key: "#{CFB.year}/in_progress_scores.ldjson",
-        body: log.map(&:to_json).join("\n")
       )
     end
   end
