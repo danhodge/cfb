@@ -80,7 +80,7 @@ module CFB
       cells = row.xpath("td")
       final_score = cells[-1].text.to_i
       intermediate_scores = cells.drop(1).take(cells.size - 2).map { |cell| cell.text.to_i }
-      name = cells[0].text.split("\n").map(&:strip).reject(&:empty?).first
+      name = cells[0].xpath("a[contains(@class, 'team')]").first.text.strip
 
       { name: name, score: final_score, intermediate_scores: intermediate_scores }
     end
