@@ -28,7 +28,7 @@ Game.prototype.winner = function() {
 
 function parseResults(data) {
     return $.map(data, function(result) {
-        return new Game(result.game, result.visitor.name, result.visitor.score, result.home.name, result.home.score);
+        return new Game(result.name, result.visitor.name, result.visitor.score, result.home.name, result.home.score);
     });
 }
 
@@ -56,8 +56,8 @@ Participant.prototype.setPlace = function(place) {
 };
 
 Participant.prototype.pointsRemaining = function() {
-    // assumes 39 games
-    return (780 - (this.pointsFor + this.pointsLost));
+    // assumes 40 games
+    return (820 - (this.pointsFor + this.pointsLost));
 };
 
 Participant.prototype.scoringAverage = function() {
@@ -67,7 +67,7 @@ Participant.prototype.scoringAverage = function() {
 };
 
 Participant.prototype.isFamilyOrFriend = function() {
-    var people = ["ribwich", "000GKW", "0000000MDS", "Rhody Mama", "Chuck", "Miss Scarlet", "SteveHolt!"];
+    var people = ["ribwich", "000GKW", "0000000MDS", "Rhody Mama", "Chuck", "Miss Scarlet", "SteveHolt!", "Trading Al", "00000MDS"];
     return (people.indexOf(this.name) != -1);
 }
 
@@ -79,7 +79,7 @@ function loadResults(handlerFunc) {
     if (age >= threshold) {
         console.log("Fetching game results, lastUpdated = " + lastUpdated);
 
-        $.getJSON('https://s3.amazonaws.com/danhodge-cfb/2017/results_2017.json', function(rawResults) {
+        $.getJSON('https://s3.amazonaws.com/danhodge-cfb/2018/results_2018.json', function(rawResults) {
             results = parseResults(rawResults);
             localStorage.setItem("gameResults", JSON.stringify(results));
             localStorage.setItem("gameResultsUpdatedAt", JSON.stringify(new Date()));
@@ -95,7 +95,7 @@ function loadResults(handlerFunc) {
 }
 
 function handleResults(results, renderFunc) {
-    $.getJSON('https://s3.amazonaws.com/danhodge-cfb/2017/participants_2017.json', function(participants) {
+    $.getJSON('https://s3.amazonaws.com/danhodge-cfb/2018/participants_2018.json', function(participants) {
         renderFunc(results, participants);
     });
 }

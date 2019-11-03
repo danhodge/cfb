@@ -2,6 +2,7 @@ require 'cfb'
 require 'date'
 require 'logger'
 require 'mechanize'
+require 'pry'
 
 module CFB
   class AddParticipant
@@ -16,6 +17,7 @@ module CFB
 
     def add(nickname:, password:, name:, email:, phone:)
       page = agent.get(base_url)
+      File.open("#{self.class}-#{Time.now.iso8601}-add_participant.html", 'w') { |file| file << page.content }
       form = page.forms.find { |form| form.action == base_url }
       form.nick = nickname
       form.password = password
@@ -23,11 +25,13 @@ module CFB
       form.email = email
       form.phone = phone
       # add silently fails if this is not specified
-      form.submit = "Submit"
+      form["submit"] = "Submit"
 
       result = form.submit
       # TODO: make sure nickname shows up at the top of the result page (SELECT nick from participant...)
-      result
+      result.tap do |r|
+        File.open("#{self.class}-#{Time.now.iso8601}-participant-added.html", 'w') { |file| file << r.content }
+      end
     end
 
     private

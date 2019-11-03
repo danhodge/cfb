@@ -19,14 +19,16 @@ module CFB
     def submit_picks(choices_file, tie_breaker)
       choices_by_game = CSV.new(File.read(choices_file), headers: true).map do |row|
         choice = CFB::Choice.new(*row.values_at("ID", "Date", "Bowl", "Choice", "Points"))
-        [choice.game.downcase, choice]
+        [normalize_game_name(choice.game), choice]
       end.to_h
 
       games = parse_table
       form = enter_picks_page.forms.first
 
       games.each_with_index do |game, i|
-        choice = choices_by_game.fetch(game.name.downcase)
+        # TODO: resolve game by name & time to deal with naming discrepancies
+        # or make sure the picks file uses the scraped names
+        choice = choices_by_game.fetch(normalize_game_name(game.name))
         buttons = form.radiobuttons.select { |btn| btn.name == "win[#{i}]" }
         visitor_button = buttons.find { |btn| btn.value == "1" }
         home_button = buttons.find { |btn| btn.value == "2" }
@@ -43,6 +45,7 @@ module CFB
       form.tie = tie_breaker
 
       result = form.submit
+      File.open("#{self.class}-#{Time.now.iso8601}-picks_saved.html", 'w') { |file| file << result.content }
       errors = result.xpath("//span[text()='CHANGES NOT SAVED!']")
 
       raise RuntimeError(errors.map(&:text).join) unless errors.empty?
@@ -54,12 +57,18 @@ module CFB
 
     def login(username, password)
       page = agent.get(url)
+      File.open("#{self.class}-#{Time.now.iso8601}-login_page.html", 'w') { |file| file << page.content }
       login_form = page.forms.find do |form|
         form.fields.find { |field| field.name == "pl" && field.value == username }
       end
       login_form.pswd = password
 
-      login_form.submit
+      result = login_form.submit
+      File.open("#{self.class}-#{Time.now.iso8601}-login_result.html", 'w') { |file| file << result.content }
+      # errors = result.xpath("//p[text()='bad password/username combination.']")
+      # raise RuntimeError(errors.map(&:text).join) unless errors.empty?
+
+      result
     end
 
     def parse_table
@@ -82,6 +91,10 @@ module CFB
       end
 
       games
+    end
+
+    def normalize_game_name(name)
+      name.downcase.gsub(/bowl/, '').strip
     end
   end
 end
