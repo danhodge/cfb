@@ -5,7 +5,7 @@ gem 'clockwork', '~> 2.0.2'
 gem 'foreman', '~> 0.85.0'
 gem 'mechanize'
 gem 'pry'
-gem 'sinatra', '~> 2.0.0'
+gem 'sinatra', '~> 2.2.0'
 gem 'unicorn', '~> 5.3.1'
 
 group :test do
